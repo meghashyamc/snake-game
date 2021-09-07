@@ -1,9 +1,6 @@
 package ui
 
 import (
-	"fmt"
-	"os"
-	"strconv"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -13,50 +10,86 @@ import (
 )
 
 type GameVisual struct {
-	snakeFigure  *canvas.Line
+	snakeHead    *canvas.Line
+	snakeBody    []*canvas.Line
 	gameOverText *canvas.Text
 	Container    *fyne.Container
 }
 
 func NewGameVisual() *GameVisual {
+	snakeHeadColor = theme.FocusColor()
+	snakeBodyColor = theme.ForegroundColor()
+	gameOverTextColor = theme.ForegroundColor()
 
-	gameVisual := &GameVisual{snakeFigure: &canvas.Line{StrokeColor: theme.ForegroundColor(), StrokeWidth: 10}, gameOverText: &canvas.Text{Alignment: fyne.TextAlignLeading, Color: theme.ForegroundColor(), Text: "Game Over!", TextSize: 20, TextStyle: fyne.TextStyle{Bold: true}}}
+	gameVisual := &GameVisual{snakeHead: &canvas.Line{StrokeColor: snakeHeadColor, StrokeWidth: snakeHeadWidth}, gameOverText: &canvas.Text{Alignment: gameOverTextAlignment, Color: gameOverTextColor, Text: gameOverText, TextSize: gameOverTextSize, TextStyle: gameOverTextStyle}}
+	gameVisual.createNewSnakeBody()
 	gameVisual.gameOverText.Hide()
 	return gameVisual
 }
 
+func (gv *GameVisual) createNewSnakeBody() {
+	gv.snakeBody = [](*canvas.Line){}
+	for i := 0; i < numOfStartingBodyParts; i++ {
+		gv.snakeBody = append(gv.snakeBody, &canvas.Line{StrokeColor: snakeBodyColor, StrokeWidth: snakeBodyWidth})
+	}
+}
+
 func (gv *GameVisual) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 
-	gv.snakeFigure.Move(fyne.Position{X: gv.snakeFigure.Position1.X - 10, Y: gv.snakeFigure.Position1.Y})
+	gv.snakeHead.Move(fyne.Position{X: gv.snakeHead.Position1.X - snakeSpeed, Y: gv.snakeHead.Position1.Y})
+
+	for i := 0; i < len(gv.snakeBody); i++ {
+		gv.snakeBody[i].Move(fyne.Position{X: gv.snakeBody[i].Position1.X - snakeSpeed, Y: gv.snakeBody[i].Position1.Y})
+	}
 	return
 
 }
 
 func (gv *GameVisual) MinSize(objects []fyne.CanvasObject) fyne.Size {
 
-	minSize := os.Getenv("MIN_GRID_SIZE")
-	minSizeInt, err := strconv.Atoi(minSize)
-	if err != nil {
-		panic(err)
-	}
-	return fyne.NewSize(float32(minSizeInt), float32(minSizeInt))
+	return fyne.NewSize(minGridSize, minGridSize)
 }
 
 func (gv *GameVisual) InitContainer() {
-	container := fyne.NewContainer(gv.snakeFigure, gv.gameOverText)
+
+	containerParts := []fyne.CanvasObject{}
+	containerParts = append(containerParts, gv.snakeHead)
+	for _, snakeBodyPart := range gv.snakeBody {
+		containerParts = append(containerParts, snakeBodyPart)
+	}
+	containerParts = append(containerParts, gv.gameOverText)
+
+	container := fyne.NewContainer(containerParts...)
 
 	container.Layout = gv
 	gv.Container = container
-	snakeFigureLength := os.Getenv("STARTING_SNAKE_LEN")
-	snakeFigureLengthInt, err := strconv.Atoi(snakeFigureLength)
-	if err != nil {
-		panic(err)
+	gv.setSnakeFigureInitialPositions()
+
+}
+
+func (gv *GameVisual) setSnakeFigureInitialPositions() {
+
+	gv.snakeHead.Position1 = fyne.Position{X: gv.Container.MinSize().Width / 2, Y: gv.Container.MinSize().Height / 2}
+	gv.snakeHead.Position2 = fyne.Position{X: gv.snakeHead.Position1.X + snakeHeadLength, Y: gv.snakeHead.Position1.Y}
+
+	for i := 0; i < len(gv.snakeBody); i++ {
+
+		if i == 0 {
+			gv.snakeBody[i].Position1 = gv.snakeHead.Position2
+
+		} else {
+			gv.snakeBody[i].Position1 = gv.snakeBody[i-1].Position2
+		}
+		gv.snakeBody[i].Position2 = fyne.Position{X: gv.snakeBody[i].Position1.X + snakeBodyPartLength, Y: gv.snakeBody[i].Position1.Y}
+
 	}
+}
+func (gv *GameVisual) hideSnakeFigure() {
 
-	gv.snakeFigure.Position1 = fyne.Position{X: container.MinSize().Width / 2, Y: container.MinSize().Height / 2}
-
-	gv.snakeFigure.Position2 = fyne.Position{X: gv.snakeFigure.Position1.X + float32(snakeFigureLengthInt), Y: gv.snakeFigure.Position1.Y}
-
+	gv.snakeHead.Hide()
+	for i := 0; i < len(gv.snakeBody); i++ {
+		gv.snakeBody[i].Hide()
+	}
 }
 
 func (gv *GameVisual) Animate() {
@@ -67,9 +100,8 @@ func (gv *GameVisual) Animate() {
 			containerSize := gv.Container.Size()
 			gv.Layout(nil, containerSize)
 			canvas.Refresh(gv.Container)
-			if core.IsGameOver(&gv.snakeFigure.Position1, &containerSize) {
-				fmt.Println("Reached here!")
-				gv.snakeFigure.Hide()
+			if core.IsGameOver(&gv.snakeHead.Position1, &containerSize) {
+				gv.hideSnakeFigure()
 				gv.gameOverText.Show()
 				canvas.Refresh(gv.Container)
 				return
