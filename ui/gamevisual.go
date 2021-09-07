@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/theme"
-	"github.com/meghashyamc/snake-game/core"
+	"github.com/meghashyamc/snake-game/decisions"
 )
 
 type GameVisual struct {
@@ -101,7 +101,7 @@ func (gv *GameVisual) Animate() {
 			containerSize := gv.Container.Size()
 			gv.Layout(nil, containerSize)
 			canvas.Refresh(gv.Container)
-			if core.IsGameOver(&gv.snakeHead.Position1, &containerSize) {
+			if decisions.IsGameOver(&gv.snakeHead.Position1, &containerSize) {
 				gv.hideSnakeFigure()
 				gv.gameOverText.Show()
 				canvas.Refresh(gv.Container)

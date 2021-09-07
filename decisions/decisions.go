@@ -1,4 +1,4 @@
-package core
+package decisions
 
 import (
 	"fyne.io/fyne/v2"
