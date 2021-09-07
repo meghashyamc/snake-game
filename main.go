@@ -12,6 +12,7 @@ func main() {
 	window := gameApp.NewWindow("Snake Game")
 
 	window.SetContent(formGameVisual(window).Container)
+	go ui.ListenToInput(window)
 	window.ShowAndRun()
 
 }

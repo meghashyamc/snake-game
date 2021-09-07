@@ -27,3 +27,5 @@ var (
 	gameOverTextStyle     = fyne.TextStyle{Bold: true}
 	snakeSpeed            = float32(10)
 )
+
+var directionKeys = map[string]bool{"Up": true, "Down": true, "Left": true, "Right": true}

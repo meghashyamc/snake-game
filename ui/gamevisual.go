@@ -10,10 +10,11 @@ import (
 )
 
 type GameVisual struct {
-	snakeHead    *canvas.Line
-	snakeBody    []*canvas.Line
-	gameOverText *canvas.Text
-	Container    *fyne.Container
+	snakeDirection string
+	snakeHead      *canvas.Line
+	snakeBody      []*canvas.Line
+	gameOverText   *canvas.Text
+	Container      *fyne.Container
 }
 
 func NewGameVisual() *GameVisual {
@@ -106,6 +107,13 @@ func (gv *GameVisual) Animate() {
 				canvas.Refresh(gv.Container)
 				return
 			}
+		case val, ok := <-directionC:
+			if !ok {
+				panic("Error in snake direction data received")
+			}
+			gv.snakeDirection = val
+			gv.Layout(nil, gv.Container.Size())
+			canvas.Refresh(gv.Container)
 
 		default:
 			time.Sleep(1 * time.Millisecond)
