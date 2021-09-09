@@ -1,4 +1,4 @@
-package decisions
+package game
 
 import (
 	"fyne.io/fyne/v2"

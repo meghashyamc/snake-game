@@ -15,6 +15,12 @@ const (
 	snakeBodyPartLength    = float32(33)
 	snakeHeadLength        = float32(33)
 	numOfStartingBodyParts = 3
+	headPart               = "head"
+	bodyPart               = "body"
+	upDirection            = "Up"
+	downDirection          = "Down"
+	leftDirection          = "Left"
+	rightDirection         = "Right"
 )
 
 var (
@@ -28,4 +34,7 @@ var (
 	snakeSpeed            = float32(10)
 )
 
-var directionKeys = map[string]bool{"Up": true, "Down": true, "Left": true, "Right": true}
+var (
+	directionKeys      = map[string]bool{upDirection: true, downDirection: true, leftDirection: true, rightDirection: true}
+	oppositeDirections = map[string]string{upDirection: downDirection, downDirection: upDirection, leftDirection: rightDirection, rightDirection: leftDirection}
+)

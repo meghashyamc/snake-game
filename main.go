@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"github.com/meghashyamc/snake-game/ui"
@@ -11,18 +13,25 @@ func main() {
 	gameApp := app.New()
 	window := gameApp.NewWindow("Snake Game")
 
-	window.SetContent(formGameVisual(window).Container)
+	newGameVisual, err := formGameVisual(window)
+	if err != nil {
+		os.Exit(1)
+	}
+	window.SetContent(newGameVisual.Container)
 	go ui.ListenToInput(window)
 	window.ShowAndRun()
 
 }
 
-func formGameVisual(win fyne.Window) *ui.GameVisual {
+func formGameVisual(win fyne.Window) (*ui.GameVisual, error) {
 
-	thisGameVisual := ui.NewGameVisual()
+	thisGameVisual, err := ui.NewGameVisual()
+	if err != nil {
+		return nil, err
+	}
 	thisGameVisual.InitContainer()
 
 	go thisGameVisual.Animate()
-	return thisGameVisual
+	return thisGameVisual, nil
 
 }
