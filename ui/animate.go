@@ -2,7 +2,6 @@ package ui
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -34,7 +33,6 @@ func (gv *GameVisual) Animate() {
 				}).Error("Error animating snake figure")
 				return
 			}
-			fmt.Println("val is---->", val)
 			gv.snakeDirection = val
 			gv.Layout(nil, gv.Container.Size())
 			canvas.Refresh(gv.Container)
@@ -48,25 +46,18 @@ func (gv *GameVisual) Animate() {
 
 //new layout of objects - on tick or as directed by the user
 func (gv *GameVisual) Layout(objects []fyne.CanvasObject, size fyne.Size) {
-
-	fmt.Println("gv.snakeDirection--->", gv.snakeDirection)
-	fmt.Println("gv.snakeHead.direction---->", gv.snakeHead.direction)
-	fmt.Println("gv.snakeBody[len(gv.snakeBody)-1].direction", gv.snakeBody[len(gv.snakeBody)-1].direction)
 	//if head's direction is opposite to the new direction specified
 	if gv.snakeDirection == oppositeDirections[gv.snakeHead.direction] {
-		fmt.Println("head direction is opposite to the one specified")
 		return
 	}
 	//if head is not in the same direction as the new direction specified, change only the orientation of the head
 
 	if gv.snakeDirection != gv.snakeHead.direction {
-		fmt.Println("head direction is not the same as or opposite to the one specified")
 
 		gv.snakeHead.setDirection(gv.snakeDirection)
 		return
 
 	}
-	fmt.Println("all other cases")
 
 	gv.moveHead()
 	gv.moveBody()
@@ -124,8 +115,6 @@ func (gv *GameVisual) moveBody() {
 }
 
 func (s *snakePart) setDirection(direction string) {
-	fmt.Println("initial position1---->", s.part.Position1)
-	fmt.Println("initial position2---->", s.part.Position2)
 
 	switch s.direction {
 
@@ -144,8 +133,6 @@ func (s *snakePart) setDirection(direction string) {
 		}).Error("Error turning snake figure")
 		os.Exit(1)
 	}
-	fmt.Println("position1---->", s.part.Position1)
-	fmt.Println("position2---->", s.part.Position2)
 
 	if s.part.Position1.Subtract(fyne.Position{}).IsZero() {
 		os.Exit(1)
@@ -183,7 +170,6 @@ func (s *snakePart) getPositionAfterVerticalTurn(direction string) fyne.Position
 
 func (s *snakePart) getPositionAfterHorizontalTurn(direction string) fyne.Position {
 
-	fmt.Println("direction is-------->", direction)
 	var partLength float32
 	if s.isHead {
 		partLength = snakeHeadLength
