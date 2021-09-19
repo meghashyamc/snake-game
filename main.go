@@ -6,10 +6,11 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"github.com/meghashyamc/snake-game/ui"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-
+	log.SetFormatter(&log.JSONFormatter{})
 	gameApp := app.New()
 	window := gameApp.NewWindow("Snake Game")
 

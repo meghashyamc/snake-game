@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -33,6 +34,7 @@ func (gv *GameVisual) Animate() {
 				}).Error("Error animating snake figure")
 				return
 			}
+			fmt.Println("val is---->", val)
 			gv.snakeDirection = val
 			gv.Layout(nil, gv.Container.Size())
 			canvas.Refresh(gv.Container)
@@ -47,73 +49,83 @@ func (gv *GameVisual) Animate() {
 //new layout of objects - on tick or as directed by the user
 func (gv *GameVisual) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 
+	fmt.Println("gv.snakeDirection--->", gv.snakeDirection)
+	fmt.Println("gv.snakeHead.direction---->", gv.snakeHead.direction)
+	fmt.Println("gv.snakeBody[len(gv.snakeBody)-1].direction", gv.snakeBody[len(gv.snakeBody)-1].direction)
 	//if head's direction is opposite to the new direction specified
 	if gv.snakeDirection == oppositeDirections[gv.snakeHead.direction] {
+		fmt.Println("head direction is opposite to the one specified")
 		return
 	}
-	//if head and tail are already in the same direction as the new direction specified, move further in the same direction
-	if gv.snakeDirection == gv.snakeHead.direction && gv.snakeDirection == gv.snakeBody[len(gv.snakeBody)-1].direction {
-		gv.snakeHead.move()
-
-		for i := 0; i < len(gv.snakeBody); i++ {
-			gv.snakeBody[i].move()
-		}
-		return
-	}
-
 	//if head is not in the same direction as the new direction specified, change only the orientation of the head
-	if gv.snakeDirection != gv.snakeDirection {
+
+	if gv.snakeDirection != gv.snakeHead.direction {
+		fmt.Println("head direction is not the same as or opposite to the one specified")
+
 		gv.snakeHead.setDirection(gv.snakeDirection)
 		return
 
 	}
+	fmt.Println("all other cases")
 
-	//if the head is in the same direction as the new direction specified but at least one body part is not in the same direction
-	gv.snakeHead.move()
-	turningIndices := gv.getIndicesOfBodyPartsToTurn()
-	for i := 0; i < len(gv.snakeBody); i++ {
-		gv.snakeBody[i].move()
-	}
-	for _, turningIndex := range turningIndices {
-		gv.snakeBody[turningIndex].setDirection(gv.snakeDirection)
-	}
+	gv.moveHead()
+	gv.moveBody()
+
+	return
 
 }
 
-func (gv *GameVisual) getIndicesOfBodyPartsToTurn() []int {
+func (gv *GameVisual) moveHead() {
 
-	indicesOfBodyPartsToTurn := []int{}
-	baseDirection := gv.snakeHead.direction
-
-	for i, snakeBodyPart := range gv.snakeBody {
-
-		if snakeBodyPart.direction != baseDirection {
-			indicesOfBodyPartsToTurn = append(indicesOfBodyPartsToTurn, i)
-			baseDirection = snakeBodyPart.direction
-		}
-	}
-
-	return indicesOfBodyPartsToTurn
-}
-
-func (s *snakePart) move() {
-
-	switch s.direction {
+	switch gv.snakeHead.direction {
 
 	case leftDirection:
-		s.part.Move(fyne.Position{X: s.part.Position1.X - snakeSpeed, Y: s.part.Position1.Y})
+		gv.snakeHead.part.Move(fyne.Position{X: gv.snakeHead.part.Position1.X - snakeSpeed, Y: gv.snakeHead.part.Position1.Y})
 	case rightDirection:
-		s.part.Move(fyne.Position{X: s.part.Position1.X + snakeSpeed, Y: s.part.Position1.Y})
+		gv.snakeHead.part.Move(fyne.Position{X: gv.snakeHead.part.Position1.X + snakeSpeed, Y: gv.snakeHead.part.Position1.Y})
 	case upDirection:
-		s.part.Move(fyne.Position{X: s.part.Position1.X, Y: s.part.Position1.Y - snakeSpeed})
+		gv.snakeHead.part.Move(fyne.Position{X: gv.snakeHead.part.Position1.X, Y: gv.snakeHead.part.Position1.Y - snakeSpeed})
 	case downDirection:
-		s.part.Move(fyne.Position{X: s.part.Position1.X, Y: s.part.Position1.Y + snakeSpeed})
+		gv.snakeHead.part.Move(fyne.Position{X: gv.snakeHead.part.Position1.X, Y: gv.snakeHead.part.Position1.Y + snakeSpeed})
+
+	}
+
+}
+
+func (gv *GameVisual) moveBody() {
+
+	var directionToSet string
+	for i, snakeBodyPart := range gv.snakeBody {
+		if i == 0 {
+			snakeBodyPart.part.Position1 = gv.snakeHead.part.Position2
+			directionToSet = gv.snakeHead.direction
+		} else {
+			snakeBodyPart.part.Position1 = gv.snakeBody[i-1].part.Position2
+			directionToSet = gv.snakeBody[i-1].direction
+		}
+
+		switch directionToSet {
+
+		case leftDirection:
+			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X + snakeBodyPartLength, Y: snakeBodyPart.part.Position1.Y}
+		case rightDirection:
+			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X - snakeBodyPartLength, Y: snakeBodyPart.part.Position1.Y}
+		case upDirection:
+			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X, Y: snakeBodyPart.part.Position1.Y + snakeBodyPartLength}
+
+		case downDirection:
+			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X, Y: snakeBodyPart.part.Position1.Y - snakeBodyPartLength}
+
+		}
+		snakeBodyPart.direction = directionToSet
 
 	}
 
 }
 
 func (s *snakePart) setDirection(direction string) {
+	fmt.Println("initial position1---->", s.part.Position1)
+	fmt.Println("initial position2---->", s.part.Position2)
 
 	switch s.direction {
 
@@ -132,10 +144,13 @@ func (s *snakePart) setDirection(direction string) {
 		}).Error("Error turning snake figure")
 		os.Exit(1)
 	}
+	fmt.Println("position1---->", s.part.Position1)
+	fmt.Println("position2---->", s.part.Position2)
 
 	if s.part.Position1.Subtract(fyne.Position{}).IsZero() {
 		os.Exit(1)
 	}
+
 	s.direction = direction
 
 }
@@ -149,13 +164,13 @@ func (s *snakePart) getPositionAfterVerticalTurn(direction string) fyne.Position
 	}
 	switch direction {
 	case leftDirection:
-		return fyne.NewPos(s.part.Position1.X-partLength, s.part.Position1.Y)
+		return fyne.NewPos(s.part.Position1.X-partLength, s.part.Position2.Y)
 
 	case rightDirection:
-		return fyne.NewPos(s.part.Position1.X+partLength, s.part.Position1.Y)
+		return fyne.NewPos(s.part.Position1.X+partLength, s.part.Position2.Y)
 
 	default:
-		err := errors.New("Unexpected new direction passed when setting direction for snake figure head/body part [from up to left or right]")
+		err := errors.New("Unexpected new direction passed when setting direction for snake figure head/body part [from vertical to left or right]")
 		log.WithFields(log.Fields{
 			"err":               err.Error(),
 			"current_direction": s.direction,
@@ -168,6 +183,7 @@ func (s *snakePart) getPositionAfterVerticalTurn(direction string) fyne.Position
 
 func (s *snakePart) getPositionAfterHorizontalTurn(direction string) fyne.Position {
 
+	fmt.Println("direction is-------->", direction)
 	var partLength float32
 	if s.isHead {
 		partLength = snakeHeadLength
@@ -176,13 +192,13 @@ func (s *snakePart) getPositionAfterHorizontalTurn(direction string) fyne.Positi
 	}
 	switch direction {
 	case upDirection:
-		return fyne.NewPos(s.part.Position1.X, s.part.Position1.Y-partLength)
+		return fyne.NewPos(s.part.Position2.X, s.part.Position1.Y-partLength)
 
-	case rightDirection:
-		return fyne.NewPos(s.part.Position1.X, s.part.Position1.Y+partLength)
+	case downDirection:
+		return fyne.NewPos(s.part.Position2.X, s.part.Position1.Y+partLength)
 
 	default:
-		err := errors.New("Unexpected new direction passed when setting direction for snake figure head/body part [from up to left or right]")
+		err := errors.New("Unexpected new direction passed when setting direction for snake figure head/body part [from horizontal to up or down]")
 		log.WithFields(log.Fields{
 			"err":               err.Error(),
 			"current_direction": s.direction,

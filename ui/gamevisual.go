@@ -32,7 +32,7 @@ func NewGameVisual() (*GameVisual, error) {
 	if err != nil {
 		return nil, err
 	}
-	gameVisual := &GameVisual{snakeHead: snakeHead, gameOverText: newGameOverText()}
+	gameVisual := &GameVisual{snakeHead: snakeHead, snakeDirection: leftDirection, gameOverText: newGameOverText()}
 	gameVisual.snakeBody = [](*snakePart){}
 	for i := 0; i < numOfStartingBodyParts; i++ {
 		snakeBodyPart, err := newSnakePart(bodyPart)
