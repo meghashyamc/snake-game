@@ -66,6 +66,7 @@ func (gv *GameVisual) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 
 }
 
+//moves snake head in the direction of the head
 func (gv *GameVisual) moveHead() {
 
 	switch gv.snakeHead.direction {
@@ -83,46 +84,49 @@ func (gv *GameVisual) moveHead() {
 
 }
 
+//moves a snake part in the direction of the previous snake part/head
 func (gv *GameVisual) moveBody() {
 
 	var directionToSet string
 	for i, snakeBodyPart := range gv.snakeBody {
 		if i == 0 {
-			snakeBodyPart.part.Position1 = gv.snakeHead.part.Position2
 			directionToSet = gv.snakeHead.direction
 		} else {
-			snakeBodyPart.part.Position1 = gv.snakeBody[i-1].part.Position2
 			directionToSet = gv.snakeBody[i-1].direction
 		}
-
 		switch directionToSet {
+		case leftDirection, upDirection:
+			snakeBodyPart.moveBodyPartLeftOrUp(gv, i, directionToSet)
 
-		case leftDirection:
-			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X + snakeBodyPartLength, Y: snakeBodyPart.part.Position1.Y}
-		case rightDirection:
-			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X - snakeBodyPartLength, Y: snakeBodyPart.part.Position1.Y}
-		case upDirection:
-			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X, Y: snakeBodyPart.part.Position1.Y + snakeBodyPartLength}
-
-		case downDirection:
-			snakeBodyPart.part.Position2 = fyne.Position{X: snakeBodyPart.part.Position1.X, Y: snakeBodyPart.part.Position1.Y - snakeBodyPartLength}
+		case rightDirection, downDirection:
+			snakeBodyPart.moveBodyPartRightOrDown(gv, i, directionToSet)
+		default:
+			err := errors.New("Unknown current direction passed when moving  snake figure body part")
+			log.WithFields(log.Fields{
+				"err":               err.Error(),
+				"current_direction": snakeBodyPart.direction,
+				"new_direction":     directionToSet,
+			}).Error("Error moving snake figure during turn")
+			os.Exit(1)
 
 		}
+
 		snakeBodyPart.direction = directionToSet
 
 	}
 
 }
 
+//changes the direction of the snake head/snake part (currently only the head's direction is being changed like this)
 func (s *snakePart) setDirection(direction string) {
 
 	switch s.direction {
 
 	case upDirection, downDirection:
-		s.part.Position1 = s.getPositionAfterVerticalTurn(direction)
+		s.part.Position1, s.part.Position2 = s.getPositionAfterVerticalTurn(direction)
 
 	case leftDirection, rightDirection:
-		s.part.Position1 = s.getPositionAfterHorizontalTurn(direction)
+		s.part.Position1, s.part.Position2 = s.getPositionAfterHorizontalTurn(direction)
 
 	default:
 		err := errors.New("Unknown current direction passed when setting direction for snake figure head/body part")
@@ -140,57 +144,4 @@ func (s *snakePart) setDirection(direction string) {
 
 	s.direction = direction
 
-}
-
-func (s *snakePart) getPositionAfterVerticalTurn(direction string) fyne.Position {
-	var partLength float32
-	if s.isHead {
-		partLength = snakeHeadLength
-	} else {
-		partLength = snakeBodyPartLength
-	}
-	switch direction {
-	case leftDirection:
-		return fyne.NewPos(s.part.Position1.X-partLength, s.part.Position2.Y)
-
-	case rightDirection:
-		return fyne.NewPos(s.part.Position1.X+partLength, s.part.Position2.Y)
-
-	default:
-		err := errors.New("Unexpected new direction passed when setting direction for snake figure head/body part [from vertical to left or right]")
-		log.WithFields(log.Fields{
-			"err":               err.Error(),
-			"current_direction": s.direction,
-			"new_direction":     direction,
-		}).Error("Error turning snake figure")
-		return fyne.Position{}
-
-	}
-}
-
-func (s *snakePart) getPositionAfterHorizontalTurn(direction string) fyne.Position {
-
-	var partLength float32
-	if s.isHead {
-		partLength = snakeHeadLength
-	} else {
-		partLength = snakeBodyPartLength
-	}
-	switch direction {
-	case upDirection:
-		return fyne.NewPos(s.part.Position2.X, s.part.Position1.Y-partLength)
-
-	case downDirection:
-		return fyne.NewPos(s.part.Position2.X, s.part.Position1.Y+partLength)
-
-	default:
-		err := errors.New("Unexpected new direction passed when setting direction for snake figure head/body part [from horizontal to up or down]")
-		log.WithFields(log.Fields{
-			"err":               err.Error(),
-			"current_direction": s.direction,
-			"new_direction":     direction,
-		}).Error("Error turning snake figure")
-		return fyne.Position{}
-
-	}
 }
