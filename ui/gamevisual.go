@@ -13,6 +13,7 @@ type GameVisual struct {
 	snakeDirection string
 	snakeHead      *snakePart
 	snakeBody      []*snakePart
+	foodParticle   *canvas.Circle
 	gameOverText   *canvas.Text
 	Container      *fyne.Container
 }
