@@ -11,22 +11,28 @@ const (
 	snakeHeadWidth         = float32(15)
 	snakeBodyWidth         = float32(10)
 	gameOverText           = "Game Over!"
+	headPart               = "head"
+	bodyPart               = "body"
 	gameOverTextSize       = float32(20)
 	snakeBodyPartLength    = float32(33)
 	snakeHeadLength        = float32(33)
+	foodDiameter           = float32(10)
 	numOfStartingBodyParts = 3
-	headPart               = "head"
-	bodyPart               = "body"
-	upDirection            = "Up"
-	downDirection          = "Down"
-	leftDirection          = "Left"
-	rightDirection         = "Right"
 )
+const (
+	upDirection    = "Up"
+	downDirection  = "Down"
+	leftDirection  = "Left"
+	rightDirection = "Right"
+)
+
+const ()
 
 var (
 	snakeHeadColor    color.Color
 	snakeBodyColor    color.Color
 	gameOverTextColor color.Color
+	foodParticleColor = color.RGBA{255, 255, 0, 0}
 )
 var (
 	gameOverTextAlignment = fyne.TextAlignLeading

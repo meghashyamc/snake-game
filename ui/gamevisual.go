@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/theme"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,15 +26,13 @@ type snakePart struct {
 }
 
 func NewGameVisual() (*GameVisual, error) {
-	snakeHeadColor = theme.FocusColor()
-	snakeBodyColor = theme.ForegroundColor()
-	gameOverTextColor = theme.ForegroundColor()
+	initColors()
 
 	snakeHead, err := newSnakePart(headPart)
 	if err != nil {
 		return nil, err
 	}
-	gameVisual := &GameVisual{snakeHead: snakeHead, snakeDirection: leftDirection, gameOverText: newGameOverText()}
+	gameVisual := &GameVisual{snakeHead: snakeHead, snakeDirection: leftDirection, foodParticle: newFoodParticle(minGridSize), gameOverText: newGameOverText()}
 	gameVisual.snakeBody = [](*snakePart){}
 	for i := 0; i < numOfStartingBodyParts; i++ {
 		snakeBodyPart, err := newSnakePart(bodyPart)
@@ -44,6 +43,12 @@ func NewGameVisual() (*GameVisual, error) {
 	}
 	gameVisual.gameOverText.Hide()
 	return gameVisual, nil
+}
+
+func newFoodParticle(gridSize float32) *canvas.Circle {
+	foodParticle := &canvas.Circle{FillColor: foodParticleColor, StrokeColor: foodParticleColor, Position1: getRandomPositionInGrid(gridSize)}
+	foodParticle.Position2 = fyne.Position{X: foodParticle.Position1.X + foodDiameter, Y: foodParticle.Position1.Y + foodDiameter}
+	return foodParticle
 }
 
 func newGameOverText() *canvas.Text {
@@ -83,6 +88,7 @@ func (gv *GameVisual) InitContainer() {
 		containerParts = append(containerParts, snakeBodyPart.part)
 	}
 	containerParts = append(containerParts, gv.gameOverText)
+	containerParts = append(containerParts, gv.foodParticle)
 
 	container := fyne.NewContainer(containerParts...)
 
@@ -115,4 +121,15 @@ func (gv *GameVisual) hideSnakeFigure() {
 	for i := 0; i < len(gv.snakeBody); i++ {
 		gv.snakeBody[i].part.Hide()
 	}
+}
+
+func initColors() {
+	snakeHeadColor = theme.FocusColor()
+	snakeBodyColor = theme.ForegroundColor()
+	gameOverTextColor = theme.ForegroundColor()
+}
+
+func getRandomPositionInGrid(gridSize float32) fyne.Position {
+
+	return fyne.Position{X: 0, Y: 0}
 }
