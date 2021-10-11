@@ -7,7 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"github.com/meghashyamc/snake-game/game"
+	"github.com/meghashyamc/snake-game/checks"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,15 +16,13 @@ func (gv *GameVisual) Animate() {
 	for {
 		select {
 		case <-tick.C:
-			containerSize := gv.Container.Size()
-			gv.Layout(nil, containerSize)
-			canvas.Refresh(gv.Container)
-			if game.IsGameOver(&gv.snakeHead.part.Position1, &containerSize) {
-				gv.hideSnakeFigure()
-				gv.gameOverText.Show()
-				canvas.Refresh(gv.Container)
+			gv.update(nextTick)
+
+			gameState := checks.CheckGameState(gv.formGameStateMap())
+			if gameState != "" && gv.update(gameState) {
 				return
 			}
+
 		case val, ok := <-directionC:
 			if !ok {
 				err := errors.New("Direction data channel is closed and empty")
@@ -34,14 +32,36 @@ func (gv *GameVisual) Animate() {
 				return
 			}
 			gv.snakeDirection = val
-			gv.Layout(nil, gv.Container.Size())
-			canvas.Refresh(gv.Container)
+			gv.update(directionChanged)
 
 		default:
 			time.Sleep(1 * time.Millisecond)
 
 		}
 	}
+}
+
+func (gv *GameVisual) update(gameState string) bool {
+	containerSize := gv.Container.Size()
+
+	var quitGame bool
+	switch gameState {
+	case nextTick:
+		gv.Layout(nil, containerSize)
+
+	case gameOver:
+		gv.hideSnakeFigure()
+		gv.hideFood()
+		gv.gameOverText.Show()
+		quitGame = true
+	case foodEaten:
+		gv.foodParticle.Move(getRandomPositionInGrid(containerSize.Width))
+	case directionChanged:
+		gv.Layout(nil, gv.Container.Size())
+
+	}
+	canvas.Refresh(gv.Container)
+	return quitGame
 }
 
 //new layout of objects - on tick or as directed by the user
@@ -144,4 +164,15 @@ func (s *snakePart) setDirection(direction string) {
 
 	s.direction = direction
 
+}
+
+func (gv *GameVisual) formGameStateMap() map[string]float32 {
+	gameStateMap := make(map[string]float32)
+	gameStateMap[snakeHeadX] = gv.snakeHead.part.Position1.X
+	gameStateMap[snakeHeadY] = gv.snakeHead.part.Position1.Y
+	gameStateMap[foodParticleCentreX] = (gv.foodParticle.Position1.X + gv.foodParticle.Position2.X) / 2
+	gameStateMap[foodParticleCentreY] = (gv.foodParticle.Position1.Y + gv.foodParticle.Position2.Y) / 2
+	gameStateMap[foodParticleDiameter] = foodDiameter
+	gameStateMap[gridSize] = gv.Container.Size().Width
+	return gameStateMap
 }

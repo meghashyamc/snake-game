@@ -34,7 +34,8 @@ func NewGameVisual() (*GameVisual, error) {
 	if err != nil {
 		return nil, err
 	}
-	gameVisual := &GameVisual{snakeHead: snakeHead, snakeDirection: leftDirection, foodParticle: newFoodParticle(minGridSize), gameOverText: newGameOverText()}
+	gameVisual := &GameVisual{snakeHead: snakeHead, snakeDirection: leftDirection, gameOverText: newGameOverText()}
+	gameVisual.newFoodParticle(minGridSize)
 	gameVisual.snakeBody = [](*snakePart){}
 	for i := 0; i < numOfStartingBodyParts; i++ {
 		snakeBodyPart, err := newSnakePart(bodyPart)
@@ -47,10 +48,11 @@ func NewGameVisual() (*GameVisual, error) {
 	return gameVisual, nil
 }
 
-func newFoodParticle(gridSize float32) *canvas.Circle {
+func (gv *GameVisual) newFoodParticle(gridSize float32) {
 	foodParticle := &canvas.Circle{FillColor: foodParticleColor, StrokeColor: foodParticleColor, Position1: getRandomPositionInGrid(gridSize)}
-	foodParticle.Position2 = fyne.Position{X: foodParticle.Position1.X + foodDiameter, Y: foodParticle.Position1.Y + foodDiameter}
-	return foodParticle
+	foodParticle.Position2 = fyne.Position{X: foodParticle.Position1.X + enclosedSquareInsideCircleSide, Y: foodParticle.Position1.Y + enclosedSquareInsideCircleSide}
+	gv.foodParticle = foodParticle
+
 }
 
 func newGameOverText() *canvas.Text {
@@ -123,6 +125,12 @@ func (gv *GameVisual) hideSnakeFigure() {
 	for i := 0; i < len(gv.snakeBody); i++ {
 		gv.snakeBody[i].part.Hide()
 	}
+}
+
+func (gv *GameVisual) hideFood() {
+
+	gv.foodParticle.Hide()
+
 }
 
 func initColors() {
