@@ -2,6 +2,8 @@ package ui
 
 import (
 	"errors"
+	"math/rand"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -131,5 +133,9 @@ func initColors() {
 
 func getRandomPositionInGrid(gridSize float32) fyne.Position {
 
-	return fyne.Position{X: 0, Y: 0}
+	randSource := rand.NewSource(time.Now().UnixNano())
+	randX := float32(rand.New(randSource).Intn(int(gridSize)))
+	randY := float32(rand.New(randSource).Intn(int(gridSize)))
+
+	return fyne.Position{X: randX, Y: randY}
 }
