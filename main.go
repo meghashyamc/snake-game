@@ -12,6 +12,7 @@ import (
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
 	gameApp := app.New()
+	gameApp.SetIcon(loadIcon())
 	window := gameApp.NewWindow("Snake Game")
 
 	newGameVisual, err := formGameVisual(window)
@@ -35,4 +36,16 @@ func formGameVisual(win fyne.Window) (*ui.GameVisual, error) {
 	go thisGameVisual.Animate()
 	return thisGameVisual, nil
 
+}
+
+func loadIcon() fyne.Resource {
+	res, err := fyne.LoadResourceFromPath("icon.png")
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err": err.Error(),
+		}).Error("Error loading app icon")
+		os.Exit(1)
+	}
+
+	return res
 }
