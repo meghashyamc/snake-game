@@ -56,10 +56,12 @@ func (gv *GameVisual) update(gameState string) bool {
 		quitGame = true
 	case foodEaten:
 		gv.foodParticle.Move(getRandomPositionInGrid(containerSize.Width))
+		gv.growSnakeBody()
 	case directionChanged:
 		gv.Layout(nil, gv.Container.Size())
 
 	}
+
 	canvas.Refresh(gv.Container)
 	return quitGame
 }
@@ -175,4 +177,15 @@ func (gv *GameVisual) formGameStateMap() map[string]float32 {
 	gameStateMap[foodParticleDiameter] = foodDiameter
 	gameStateMap[gridSize] = gv.Container.Size().Width
 	return gameStateMap
+}
+
+func (gv *GameVisual) growSnakeBody() {
+
+	snakeBodyPart, _ := newSnakePart(bodyPart)
+	gv.snakeBody = append(gv.snakeBody, snakeBodyPart)
+	lastIndex := len(gv.snakeBody) - 1
+	gv.Container.Objects = append(gv.Container.Objects, gv.snakeBody[lastIndex-1].part)
+	gv.snakeBody[lastIndex].part.Position1 = gv.snakeBody[lastIndex-1].part.Position2
+	gv.snakeBody[lastIndex].part.Position2 = fyne.Position{X: gv.snakeBody[lastIndex].part.Position1.X + snakeBodyPartLength, Y: gv.snakeBody[lastIndex].part.Position1.Y}
+
 }
