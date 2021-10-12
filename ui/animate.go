@@ -63,6 +63,7 @@ func (gv *GameVisual) update(gameState, gameScore string) bool {
 		if gameScore != "" {
 			gv.updateGameScore(gameScore)
 		}
+		snakeSpeed *= 1.5
 	case directionChanged:
 		gv.Layout(nil, gv.Container.Size())
 
