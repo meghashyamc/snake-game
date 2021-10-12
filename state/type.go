@@ -1,4 +1,4 @@
-package checks
+package state
 
 const (
 	clearence          = float32(10)

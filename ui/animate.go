@@ -8,7 +8,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"github.com/meghashyamc/snake-game/checks"
+	"github.com/meghashyamc/snake-game/state"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,7 +19,7 @@ func (gv *GameVisual) Animate() {
 		case <-tick.C:
 			gv.update(nextTick, "")
 
-			gameState, gameScore := checks.CheckGameState(gv.formGameStateMap())
+			gameState, gameScore := state.CheckGameState(gv.formGameStateMap())
 			if gameState != "" && gv.update(gameState, gameScore) {
 				return
 			}
