@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"os"
+	"strconv"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -16,10 +17,10 @@ func (gv *GameVisual) Animate() {
 	for {
 		select {
 		case <-tick.C:
-			gv.update(nextTick)
+			gv.update(nextTick, "")
 
-			gameState := checks.CheckGameState(gv.formGameStateMap())
-			if gameState != "" && gv.update(gameState) {
+			gameState, gameScore := checks.CheckGameState(gv.formGameStateMap())
+			if gameState != "" && gv.update(gameState, gameScore) {
 				return
 			}
 
@@ -32,7 +33,7 @@ func (gv *GameVisual) Animate() {
 				return
 			}
 			gv.snakeDirection = val
-			gv.update(directionChanged)
+			gv.update(directionChanged, "")
 
 		default:
 			time.Sleep(1 * time.Millisecond)
@@ -41,7 +42,7 @@ func (gv *GameVisual) Animate() {
 	}
 }
 
-func (gv *GameVisual) update(gameState string) bool {
+func (gv *GameVisual) update(gameState, gameScore string) bool {
 	containerSize := gv.Container.Size()
 
 	var quitGame bool
@@ -52,11 +53,16 @@ func (gv *GameVisual) update(gameState string) bool {
 	case gameOver:
 		gv.hideSnakeFigure()
 		gv.hideFood()
+		gv.updateGameOverText(gv.gameScore.Text)
 		gv.gameOverText.Show()
+		gv.gameScore.Hide()
 		quitGame = true
 	case foodEaten:
 		gv.foodParticle.Move(getRandomPositionInGrid(containerSize.Width))
 		gv.growSnakeBody()
+		if gameScore != "" {
+			gv.updateGameScore(gameScore)
+		}
 	case directionChanged:
 		gv.Layout(nil, gv.Container.Size())
 
@@ -176,6 +182,16 @@ func (gv *GameVisual) formGameStateMap() map[string]float32 {
 	gameStateMap[foodParticleCentreY] = (gv.foodParticle.Position1.Y + gv.foodParticle.Position2.Y) / 2
 	gameStateMap[foodParticleDiameter] = foodDiameter
 	gameStateMap[gridSize] = gv.Container.Size().Width
+
+	gameScoreFloat, err := strconv.ParseFloat(gv.gameScore.Text, 32)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err":     err.Error(),
+			"details": "could not vonvert game score to float",
+		}).Error("Game score is not a number")
+		os.Exit(1)
+	}
+	gameStateMap[gameScore] = float32(gameScoreFloat)
 	return gameStateMap
 }
 
@@ -187,5 +203,17 @@ func (gv *GameVisual) growSnakeBody() {
 	gv.Container.Objects = append(gv.Container.Objects, gv.snakeBody[lastIndex-1].part)
 	gv.snakeBody[lastIndex].part.Position1 = gv.snakeBody[lastIndex-1].part.Position2
 	gv.snakeBody[lastIndex].part.Position2 = fyne.Position{X: gv.snakeBody[lastIndex].part.Position1.X + snakeBodyPartLength, Y: gv.snakeBody[lastIndex].part.Position1.Y}
+
+}
+
+func (gv *GameVisual) updateGameScore(gameScore string) {
+	gv.gameScore = newGameScoreText(gameScore)
+	gv.Container.Objects[gameScoreIndex] = gv.gameScore
+}
+
+func (gv *GameVisual) updateGameOverText(gameScore string) {
+
+	gv.gameOverText = newGameOverText(gameScore)
+	gv.Container.Objects[gameOverTextIndex] = gv.gameOverText
 
 }

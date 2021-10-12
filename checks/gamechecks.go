@@ -1,16 +1,18 @@
 package checks
 
-func CheckGameState(gameStateMap gameState) string {
+import "strconv"
+
+func CheckGameState(gameStateMap gameState) (string, string) {
 
 	if gameStateMap.isGameOver() {
-		return gameOver
+		return gameOver, ""
 	}
 
 	if gameStateMap.isFoodEaten() {
 
-		return foodEaten
+		return foodEaten, incrementNumAsString(gameStateMap[gameScore])
 	}
-	return ""
+	return "", ""
 
 }
 func (gs gameState) isGameOver() bool {
@@ -45,5 +47,12 @@ func isSnakeHeadBetweenCoords(coord1, coord2, snakeHeadCoord float32) bool {
 func hasSnakeReachedExtremes(snakeHeadPosition, gridLength float32) bool {
 
 	return snakeHeadPosition <= 0 || snakeHeadPosition >= gridLength
+
+}
+
+func incrementNumAsString(num float32) string {
+
+	num += pointsPerIncrement
+	return strconv.Itoa(int(num))
 
 }

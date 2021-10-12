@@ -18,6 +18,7 @@ type GameVisual struct {
 	snakeBody      []*snakePart
 	foodParticle   *canvas.Circle
 	gameOverText   *canvas.Text
+	gameScore      *canvas.Text
 	Container      *fyne.Container
 }
 
@@ -34,7 +35,7 @@ func NewGameVisual() (*GameVisual, error) {
 	if err != nil {
 		return nil, err
 	}
-	gameVisual := &GameVisual{snakeHead: snakeHead, snakeDirection: leftDirection, gameOverText: newGameOverText()}
+	gameVisual := &GameVisual{snakeHead: snakeHead, snakeDirection: leftDirection, gameOverText: newGameOverText(startingGameScore), gameScore: newGameScoreText(startingGameScore)}
 	gameVisual.newFoodParticle(minGridSize)
 	gameVisual.snakeBody = [](*snakePart){}
 	for i := 0; i < numOfStartingBodyParts; i++ {
@@ -55,8 +56,12 @@ func (gv *GameVisual) newFoodParticle(gridSize float32) {
 
 }
 
-func newGameOverText() *canvas.Text {
-	return &canvas.Text{Alignment: gameOverTextAlignment, Color: gameOverTextColor, Text: gameOverText, TextSize: gameOverTextSize, TextStyle: gameOverTextStyle}
+func newGameOverText(suffix string) *canvas.Text {
+	return &canvas.Text{Alignment: gameOverTextAlignment, Color: gameOverTextColor, Text: gameOverText + suffix, TextSize: gameOverTextSize, TextStyle: gameOverTextStyle}
+}
+
+func newGameScoreText(text string) *canvas.Text {
+	return &canvas.Text{Alignment: gameOverTextAlignment, Color: gameOverTextColor, Text: text, TextSize: gameOverTextSize, TextStyle: gameOverTextStyle}
 }
 
 func newSnakePart(partName string) (*snakePart, error) {
@@ -92,6 +97,11 @@ func (gv *GameVisual) InitContainer() {
 		containerParts = append(containerParts, snakeBodyPart.part)
 	}
 	containerParts = append(containerParts, gv.gameOverText)
+	gameOverTextIndex = len(containerParts) - 1
+
+	containerParts = append(containerParts, gv.gameScore)
+	gameScoreIndex = len(containerParts) - 1
+
 	containerParts = append(containerParts, gv.foodParticle)
 
 	container := fyne.NewContainer(containerParts...)

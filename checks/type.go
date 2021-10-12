@@ -1,6 +1,9 @@
 package checks
 
-const clearence = float32(10)
+const (
+	clearence          = float32(10)
+	pointsPerIncrement = float32(10)
+)
 const (
 	nextTick         = "next_tick"
 	directionChanged = "direction_changed"
@@ -15,6 +18,7 @@ const (
 	foodParticleCentreY  = "food_particle_centre_y"
 	foodParticleDiameter = "food_particle_diameter"
 	gridSize             = "grid_size"
+	gameScore            = "game_score"
 )
 
 type gameState map[string]float32

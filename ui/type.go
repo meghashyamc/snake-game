@@ -12,7 +12,8 @@ const (
 	minGridSize                    = float32(500)
 	snakeHeadWidth                 = float32(15)
 	snakeBodyWidth                 = float32(10)
-	gameOverText                   = "Game Over!"
+	startingGameScore              = "0"
+	gameOverText                   = "Game Over! Your score was "
 	headPart                       = "head"
 	bodyPart                       = "body"
 	gameOverTextSize               = float32(20)
@@ -44,6 +45,7 @@ const (
 	foodParticleCentreY  = "food_particle_centre_y"
 	foodParticleDiameter = "food_particle_diameter"
 	gridSize             = "grid_size"
+	gameScore            = "game_score"
 )
 
 var (
@@ -56,6 +58,8 @@ var (
 	gameOverTextAlignment = fyne.TextAlignLeading
 	gameOverTextStyle     = fyne.TextStyle{Bold: true}
 	snakeSpeed            = float32(10)
+	gameScoreIndex        int
+	gameOverTextIndex     int
 )
 
 var (
